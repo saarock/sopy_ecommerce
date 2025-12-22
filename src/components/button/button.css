@@ -1,0 +1,52 @@
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #101540;
+  color: white;
+  min-height: 48px; /* Touch-friendly height */
+  min-width: 48px; /* Touch-friendly width */
+}
+
+.button:hover {
+  background-color: #1a1f5a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 21, 64, 0.3);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .button {
+    padding: 12px 20px;
+    font-size: 15px;
+    min-height: 44px; /* iOS touch target minimum */
+    width: 100%; /* Full width on mobile for better usability */
+  }
+}
+
+@media (max-width: 480px) {
+  .button {
+    padding: 10px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+}
+
+@media (min-width: 769px) {
+  .button {
+    width: auto; /* Auto width on larger screens */
+  }
+}

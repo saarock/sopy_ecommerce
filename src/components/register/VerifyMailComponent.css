@@ -1,0 +1,186 @@
+.verify-mail-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem;
+}
+
+/* Positioned back button for better UX */
+.verify-back-btn {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: white !important;
+  color: #101540 !important;
+  border: 2px solid #e2e8f0 !important;
+  padding: 0.625rem 1.5rem !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  min-height: 44px; /* Touch-friendly */
+}
+
+.verify-back-btn:hover {
+  background: #f8fafc !important;
+  border-color: #101540 !important;
+  transform: translateX(-2px);
+}
+
+/* Modern card design */
+.verify-card {
+  background: white;
+  padding: 3.5rem 3rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(16, 21, 64, 0.12);
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  position: relative;
+}
+
+.verify-heading {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #101540;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.verify-subtext {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0 0 2.5rem 0;
+  line-height: 1.6;
+}
+
+.verify-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Enhanced OTP input field */
+.verify-input {
+  padding: 1.125rem;
+  font-size: 1.25rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  font-weight: 600;
+  color: #101540;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  min-height: 48px; /* Touch-friendly */
+}
+
+.verify-input:focus {
+  border-color: #101540;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 21, 64, 0.1);
+}
+
+.verify-submit-btn {
+  background: #101540 !important;
+  color: white !important;
+  padding: 1.125rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  min-height: 48px; /* Touch-friendly */
+}
+
+.verify-submit-btn:hover {
+  background: #1a2356 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 21, 64, 0.25);
+}
+
+.verify-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .verify-card {
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+  }
+
+  .verify-heading {
+    font-size: 2rem;
+  }
+
+  .verify-subtext {
+    font-size: 0.9375rem;
+  }
+
+  .verify-input {
+    font-size: 1.125rem;
+    letter-spacing: 0.4rem;
+    min-height: 44px; /* iOS minimum */
+  }
+
+  .verify-back-btn {
+    top: 1.25rem;
+    left: 1.25rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .verify-card {
+    padding: 2.5rem 1.75rem;
+  }
+
+  .verify-heading {
+    font-size: 1.875rem;
+  }
+
+  .verify-back-btn {
+    top: 1rem;
+    left: 1rem;
+    padding: 0.5rem 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-mail-container {
+    padding: 0.5rem;
+  }
+
+  .verify-card {
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+  }
+
+  .verify-heading {
+    font-size: 1.5rem;
+  }
+
+  .verify-subtext {
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+
+  .verify-input {
+    font-size: 1rem;
+    letter-spacing: 0.3rem;
+    padding: 1rem;
+  }
+
+  .verify-form {
+    gap: 1.25rem;
+  }
+
+  .verify-back-btn {
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem;
+  }
+}

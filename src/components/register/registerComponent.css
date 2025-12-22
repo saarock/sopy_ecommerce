@@ -1,0 +1,146 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 2rem;
+  padding: 1rem;
+}
+
+.register-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 2rem;
+  width: 100%;
+  max-width: 32rem;
+}
+
+/* Enhanced header styling */
+.register-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.register-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #101540;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.register-description {
+  font-size: 1rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Form styling with better spacing */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  width: 100%;
+}
+
+.register-submit-btn {
+  background-color: #101540 !important;
+  color: white !important;
+  padding: 1rem !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  width: 100% !important;
+  margin-top: 0.75rem !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  min-height: 48px !important; /* Touch-friendly */
+}
+
+.register-submit-btn:hover {
+  background-color: #1a2250 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 21, 64, 0.25);
+}
+
+.register-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 0.75rem;
+  }
+
+  .register-card {
+    padding: 2.5rem 2rem;
+    max-width: 100%;
+  }
+
+  .register-title {
+    font-size: 2rem;
+  }
+
+  .register-description {
+    font-size: 0.9375rem;
+  }
+
+  .register-submit-btn {
+    min-height: 44px !important; /* iOS minimum */
+  }
+}
+
+@media (max-width: 640px) {
+  .register-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .register-title {
+    font-size: 1.75rem;
+  }
+
+  .register-description {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 0.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .register-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1.5rem;
+  }
+
+  .register-header {
+    margin-bottom: 2rem;
+  }
+
+  .register-title {
+    font-size: 1.5rem;
+  }
+
+  .register-description {
+    font-size: 0.875rem;
+  }
+
+  .register-form {
+    gap: 1rem;
+  }
+
+  .register-submit-btn {
+    padding: 0.875rem !important;
+    font-size: 0.9375rem !important;
+  }
+}
