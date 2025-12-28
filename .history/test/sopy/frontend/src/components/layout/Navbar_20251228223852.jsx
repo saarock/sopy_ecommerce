@@ -93,7 +93,7 @@ export default function Navbar() {
                     </div>
                     <span className="hidden md:block text-slate-700 font-medium">{user.name}</span>
                   </button>
-                  <div className="absolute top-5 right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 hidden group-hover:block">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 hidden group-hover:block">
                     <Link to="/profile" className="block px-4 py-2 text-slate-700 hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />

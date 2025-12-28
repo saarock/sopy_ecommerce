@@ -86,14 +86,14 @@ export default function Navbar() {
                 </Link>
 
                 {/* Profile Dropdown */}
-                <div className="relative group">
+                <div className="relative group top-3">
                   <button className="flex items-center gap-2 px-3 py-2 hover:bg-slate-100 rounded-lg transition-colors">
                     <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-white" />
                     </div>
                     <span className="hidden md:block text-slate-700 font-medium">{user.name}</span>
                   </button>
-                  <div className="absolute top-5 right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 hidden group-hover:block">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 hidden group-hover:block">
                     <Link to="/profile" className="block px-4 py-2 text-slate-700 hover:bg-slate-50 transition-colors">
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
