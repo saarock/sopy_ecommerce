@@ -429,7 +429,7 @@ router.get(
   "/products",
   asyncHandler(async (req, res) => {
     const page = Number.parseInt(req.query.page) || 1
-    const limit = Number.parseInt(req.query.limit) || 40
+    const limit = Number.parseInt(req.query.limit) || 4
     const skip = (page - 1) * limit
 
     const filter = {}

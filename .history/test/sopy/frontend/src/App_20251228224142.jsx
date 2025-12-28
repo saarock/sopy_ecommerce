@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { Toaster } from "react-hot-toast"
 import { useAuthStore } from "./store/authStore"
 
-import UserLayout from "./UserLayout.jsx"
+import UserLayout from "./components/layout/Navbar"
 import AdminLayout from "./components/admin/AdminLayout"
 
 // pages
