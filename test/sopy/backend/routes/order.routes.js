@@ -107,11 +107,26 @@ router.get(
   "/",
   protect,
   asyncHandler(async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 })
+    const page = Number.parseInt(req.query.page) || 1
+    const limit = Number.parseInt(req.query.limit) || 10
+    const skip = (page - 1) * limit
+
+    const orders = await Order.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip)
+
+    const total = await Order.countDocuments({ user: req.user._id })
 
     res.status(200).json({
       success: true,
       data: orders,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
     })
   }),
 )
