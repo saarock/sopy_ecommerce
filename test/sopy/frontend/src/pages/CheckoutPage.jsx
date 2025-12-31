@@ -151,7 +151,14 @@ export default function CheckoutPage() {
 
     } catch (error) {
       console.error(error)
-      toast.error(error.response?.data?.message || "Failed to create order")
+      let message = error.response?.data?.message || "Failed to create order"
+
+      // Check for 404 on Khalti route specifically
+      if (paymentMethod === "Khalti" && error.response?.status === 404) {
+        message = "Khalti service not found. Please restart your backend server."
+      }
+
+      toast.error(message)
       setProcessingKhalti(false)
     }
   }
@@ -248,8 +255,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setPaymentMethod("Stripe")}
                     className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Stripe"
-                        ? "border-primary-500 bg-primary-50 ring-1 ring-primary-500 text-primary-700"
-                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                      ? "border-primary-500 bg-primary-50 ring-1 ring-primary-500 text-primary-700"
+                      : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
                       }`}
                   >
                     <CreditCard className="w-6 h-6 mb-2" />
@@ -259,8 +266,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setPaymentMethod("Khalti")}
                     className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Khalti"
-                        ? "border-purple-500 bg-purple-50 ring-1 ring-purple-500 text-purple-700"
-                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                      ? "border-purple-500 bg-purple-50 ring-1 ring-purple-500 text-purple-700"
+                      : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
                       }`}
                   >
                     <Wallet className="w-6 h-6 mb-2" />
