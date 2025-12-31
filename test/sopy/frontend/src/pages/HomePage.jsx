@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowRight, ShoppingBag, Shield, Truck, Star, Sparkles } from "lucide-react"
-import api from "../../lib/api"
+import api from "../lib/api"
 
 export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState([])

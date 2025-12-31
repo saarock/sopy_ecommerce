@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
-import { CreditCard } from "lucide-react"
+import { CreditCard, ShoppingBag, MapPin, Loader2, ArrowRight } from "lucide-react"
 import api from "../lib/api"
 import { useCartStore } from "../store/cartStore"
 import toast from "react-hot-toast"
@@ -49,6 +49,7 @@ const CheckoutForm = ({ orderId, clientSecret }) => {
         navigate(`/orders/${orderId}`)
       }
     } catch (error) {
+      console.error(error);
       toast.error("Payment failed. Please try again.")
     } finally {
       setProcessing(false)
@@ -58,8 +59,20 @@ const CheckoutForm = ({ orderId, clientSecret }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement />
-      <button type="submit" disabled={!stripe || processing} className="w-full btn-primary">
-        {processing ? "Processing..." : "Pay Now"}
+      <button
+        type="submit"
+        disabled={!stripe || processing}
+        className="btn-primary w-full flex items-center justify-center gap-2"
+      >
+        {processing ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" /> Processing...
+          </>
+        ) : (
+          <>
+            Pay Now
+          </>
+        )}
       </button>
     </form>
   )
@@ -90,6 +103,7 @@ export default function CheckoutPage() {
       stripePromise = loadStripe(data.publishableKey)
       setLoading(false)
     } catch (error) {
+      console.error(error)
       toast.error("Failed to load payment system")
       setLoading(false)
     }
@@ -106,6 +120,7 @@ export default function CheckoutPage() {
 
     try {
       // Create order
+      // backend expects: { shippingAddress, paymentMethod }
       const orderData = await api.post("/orders", {
         shippingAddress: shippingInfo,
         paymentMethod: "Stripe",
@@ -119,36 +134,43 @@ export default function CheckoutPage() {
       })
 
       setOrder(newOrder)
-      setClientSecret(paymentData.data.data.clientSecret)
+      setClientSecret(paymentData.data.data.clientSecret) // adjust path if needed
+      toast.success("Order created! Please complete payment.")
+
     } catch (error) {
+      console.error(error)
       toast.error(error.response?.data?.message || "Failed to create order")
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <h1 className="text-3xl font-bold text-zinc-900 mb-8">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Shipping Form */}
-        <div>
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
-            <form onSubmit={handleCreateOrder} className="space-y-4">
+        {/* Left Col: Shipping & Payment */}
+        <div className="space-y-8">
+          {/* Section 1: Shipping */}
+          <div className={`glass-card pt-6 pb-6 ${clientSecret ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary-500" />
+              Shipping Information
+            </h2>
+            <form id="shipping-form" onSubmit={handleCreateOrder} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Street Address</label>
+                <label className="block text-sm font-medium mb-1 text-zinc-700">Street Address</label>
                 <input
                   type="text"
                   required
-                  className="input"
+                  className="input w-full"
                   value={shippingInfo.street}
                   onChange={(e) => setShippingInfo({ ...shippingInfo, street: e.target.value })}
                   placeholder="123 Main St"
@@ -157,23 +179,22 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">City</label>
+                  <label className="block text-sm font-medium mb-1 text-zinc-700">City</label>
                   <input
                     type="text"
                     required
-                    className="input"
+                    className="input w-full"
                     value={shippingInfo.city}
                     onChange={(e) => setShippingInfo({ ...shippingInfo, city: e.target.value })}
                     placeholder="New York"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">State</label>
+                  <label className="block text-sm font-medium mb-1 text-zinc-700">State</label>
                   <input
                     type="text"
                     required
-                    className="input"
+                    className="input w-full"
                     value={shippingInfo.state}
                     onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value })}
                     placeholder="NY"
@@ -183,23 +204,22 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">ZIP Code</label>
+                  <label className="block text-sm font-medium mb-1 text-zinc-700">ZIP Code</label>
                   <input
                     type="text"
                     required
-                    className="input"
+                    className="input w-full"
                     value={shippingInfo.zipCode}
                     onChange={(e) => setShippingInfo({ ...shippingInfo, zipCode: e.target.value })}
                     placeholder="10001"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">Country</label>
+                  <label className="block text-sm font-medium mb-1 text-zinc-700">Country</label>
                   <input
                     type="text"
                     required
-                    className="input"
+                    className="input w-full"
                     value={shippingInfo.country}
                     onChange={(e) => setShippingInfo({ ...shippingInfo, country: e.target.value })}
                     placeholder="USA"
@@ -208,18 +228,18 @@ export default function CheckoutPage() {
               </div>
 
               {!clientSecret && (
-                <button type="submit" className="w-full btn-primary">
-                  Continue to Payment
+                <button type="submit" className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
+                  Continue to Payment <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </form>
           </div>
 
-          {/* Payment Form */}
+          {/* Section 2: Payment */}
           {clientSecret && stripePromise && (
-            <div className="card mt-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
+            <div className="glass-card animate-fadeIn">
+              <h2 className="text-xl font-bold text-zinc-900 mb-4 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary-500" />
                 Payment Information
               </h2>
               <Elements stripe={stripePromise} options={{ clientSecret }}>
@@ -229,38 +249,49 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Order Summary */}
+        {/* Right Col: Order Summary */}
         <div>
-          <div className="card sticky top-20">
-            <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+          <div className="glass-card sticky top-24">
+            <h2 className="text-xl font-bold text-zinc-900 mb-4 flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-primary-500" />
+              Order Summary
+            </h2>
 
             {cart && (
               <>
-                <div className="space-y-3 mb-6">
+                <div className="space-y-4 mb-6 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                   {cart.items.map((item) => (
-                    <div key={item.product._id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {item.product.name} × {item.quantity}
-                      </span>
-                      <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                    <div key={item.product._id} className="flex gap-4">
+                      <div className="w-16 h-16 bg-zinc-100 rounded-md overflow-hidden flex-shrink-0">
+                        {item.product.images?.[0]?.url ? (
+                          <img src={item.product.images[0].url} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-300"><ShoppingBag className="w-6 h-6" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-zinc-900 line-clamp-2">{item.product.name}</p>
+                        <p className="text-xs text-zinc-500 mt-1">Qty: {item.quantity}</p>
+                      </div>
+                      <span className="text-sm font-bold text-zinc-900">${(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between text-gray-600">
+                <div className="border-t border-zinc-100 pt-4 space-y-2">
+                  <div className="flex justify-between text-zinc-600">
                     <span>Subtotal</span>
                     <span>${cart.totalAmount.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-zinc-600">
                     <span>Shipping</span>
                     <span>{cart.totalAmount > 100 ? "FREE" : "$10.00"}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-zinc-600">
                     <span>Tax (10%)</span>
                     <span>${(cart.totalAmount * 0.1).toFixed(2)}</span>
                   </div>
-                  <div className="border-t pt-2 flex justify-between text-lg font-bold">
+                  <div className="border-t border-zinc-200 pt-3 flex justify-between text-lg font-bold text-zinc-900">
                     <span>Total</span>
                     <span className="text-primary-600">
                       ${(cart.totalAmount + (cart.totalAmount > 100 ? 0 : 10) + cart.totalAmount * 0.1).toFixed(2)}
