@@ -113,19 +113,19 @@ export default function OrderDetailPage() {
             <div className="bg-zinc-50 rounded-xl p-4 border border-zinc-100 space-y-3">
               <div className="flex justify-between text-zinc-600">
                 <span>Subtotal</span>
-                <span>${Number(order.subtotal || 0).toFixed(2)}</span>
+                <span>${Number(order.itemsPrice || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-600">
                 <span>Shipping</span>
-                <span>${Number(order.shippingCost || 0).toFixed(2)}</span>
+                <span>${Number(order.shippingPrice || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-zinc-600">
                 <span>Tax</span>
-                <span>${Number(order.tax || 0).toFixed(2)}</span>
+                <span>${Number(order.taxPrice || 0).toFixed(2)}</span>
               </div>
               <div className="border-t border-zinc-200 pt-3 flex justify-between text-lg font-bold text-zinc-900">
                 <span>Total</span>
-                <span className="text-primary-600">${Number(order.totalAmount || order.totalPrice || 0).toFixed(2)}</span>
+                <span className="text-primary-600">${Number(order.totalPrice || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>

@@ -88,19 +88,19 @@ export default function BillGenerator({ order }) {
                 <div className="w-64 space-y-3">
                     <div className="flex justify-between text-gray-600">
                         <span>Subtotal:</span>
-                        <span>${order.itemsPrice.toFixed(2)}</span>
+                        <span>${(order.itemsPrice || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                         <span>Tax:</span>
-                        <span>${order.taxPrice.toFixed(2)}</span>
+                        <span>${(order.taxPrice || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                         <span>Shipping:</span>
-                        <span>${order.shippingPrice.toFixed(2)}</span>
+                        <span>${(order.shippingPrice || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-xl font-bold text-gray-900 border-t border-gray-200 pt-3">
                         <span>Total:</span>
-                        <span>${order.totalPrice.toFixed(2)}</span>
+                        <span>${(order.totalPrice || 0).toFixed(2)}</span>
                     </div>
                 </div>
             </div>

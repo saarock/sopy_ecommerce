@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import api from "../../lib/api"
 import BillGenerator from "../../components/BillGenerator"
-import { Printer, ChevronLeft, ChevronRight, Search, Eye, Edit, Truck, X } from "lucide-react"
+import { Printer, ChevronLeft, ChevronRight, Search, Eye, Edit, Truck, X, Users, Package } from "lucide-react"
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([])
@@ -246,7 +246,7 @@ export default function AdminOrders() {
               <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-zinc-50 p-4 rounded-xl">
                 <div className="flex items-center gap-3">
                   <span className={`w-3 h-3 rounded-full ${selectedOrder.status === 'delivered' ? 'bg-green-500' :
-                      selectedOrder.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
+                    selectedOrder.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
                     }`}></span>
                   <span className="font-medium text-zinc-700 capitalize">Current Status: {selectedOrder.status}</span>
                 </div>
