@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
-import { CreditCard, ShoppingBag, MapPin, Loader2, ArrowRight } from "lucide-react"
+import { CreditCard, ShoppingBag, MapPin, Loader2, ArrowRight, Wallet } from "lucide-react"
 import api from "../lib/api"
 import { useCartStore } from "../store/cartStore"
 import toast from "react-hot-toast"
@@ -91,6 +91,8 @@ export default function CheckoutPage() {
   const [order, setOrder] = useState(null)
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState("Stripe")
+  const [processingKhalti, setProcessingKhalti] = useState(false)
 
   useEffect(() => {
     fetchCart()
@@ -120,26 +122,37 @@ export default function CheckoutPage() {
 
     try {
       // Create order
-      // backend expects: { shippingAddress, paymentMethod }
       const orderData = await api.post("/orders", {
         shippingAddress: shippingInfo,
-        paymentMethod: "Stripe",
+        paymentMethod: paymentMethod,
       })
 
       const newOrder = orderData.data.data
-
-      // Create payment intent
-      const paymentData = await api.post("/payment/create-payment-intent", {
-        orderId: newOrder._id,
-      })
-
       setOrder(newOrder)
-      setClientSecret(paymentData.data.data.clientSecret) // adjust path if needed
-      toast.success("Order created! Please complete payment.")
+
+      if (paymentMethod === "Stripe") {
+        const paymentData = await api.post("/payment/create-payment-intent", {
+          orderId: newOrder._id,
+        })
+        setClientSecret(paymentData.data.data.clientSecret)
+        toast.success("Order created! Please complete payment.")
+      } else if (paymentMethod === "Khalti") {
+        setProcessingKhalti(true)
+        const khaltiData = await api.post("/payment/khalti/initiate", {
+          orderId: newOrder._id,
+        })
+        if (khaltiData.data.payment_url) {
+          window.location.href = khaltiData.data.payment_url
+        } else {
+          toast.error("Failed to initiate Khalti payment")
+          setProcessingKhalti(false)
+        }
+      }
 
     } catch (error) {
       console.error(error)
       toast.error(error.response?.data?.message || "Failed to create order")
+      setProcessingKhalti(false)
     }
   }
 
@@ -159,7 +172,7 @@ export default function CheckoutPage() {
         {/* Left Col: Shipping & Payment */}
         <div className="space-y-8">
           {/* Section 1: Shipping */}
-          <div className={`glass-card pt-6 pb-6 ${clientSecret ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
+          <div className={`glass-card pt-6 pb-6 ${clientSecret || processingKhalti ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
             <h2 className="text-xl font-bold text-zinc-900 mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary-500" />
               Shipping Information
@@ -227,10 +240,45 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {!clientSecret && (
+              {/* Payment Method Selection */}
+              <div className="pt-4 border-t border-zinc-100">
+                <h3 className="font-semibold text-zinc-900 mb-3">Select Payment Method</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("Stripe")}
+                    className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Stripe"
+                        ? "border-primary-500 bg-primary-50 ring-1 ring-primary-500 text-primary-700"
+                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                      }`}
+                  >
+                    <CreditCard className="w-6 h-6 mb-2" />
+                    <span className="font-medium text-sm">Credit Card</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("Khalti")}
+                    className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Khalti"
+                        ? "border-purple-500 bg-purple-50 ring-1 ring-purple-500 text-purple-700"
+                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                      }`}
+                  >
+                    <Wallet className="w-6 h-6 mb-2" />
+                    <span className="font-medium text-sm">Khalti Wallet</span>
+                  </button>
+                </div>
+              </div>
+
+              {!clientSecret && !processingKhalti && (
                 <button type="submit" className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
-                  Continue to Payment <ArrowRight className="w-4 h-4" />
+                  {paymentMethod === "Stripe" ? "Continue to Card Payment" : "Pay with Khalti"} <ArrowRight className="w-4 h-4" />
                 </button>
+              )}
+
+              {processingKhalti && (
+                <div className="w-full mt-6 flex items-center justify-center gap-2 text-purple-600 font-medium">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Redirecting to Khalti...
+                </div>
               )}
             </form>
           </div>

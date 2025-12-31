@@ -1,5 +1,6 @@
 import express from "express"
 import Stripe from "stripe"
+import axios from "axios"
 import { asyncHandler } from "../middleware/error.middleware.js"
 import { protect } from "../middleware/auth.middleware.js"
 import Order from "../models/order.model.js"
@@ -132,5 +133,124 @@ router.get("/config", (req, res) => {
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
   })
 })
+
+// @route   POST /api/payment/khalti/initiate
+// @desc    Initiate Khalti payment
+// @access  Private
+router.post(
+  "/khalti/initiate",
+  protect,
+  asyncHandler(async (req, res) => {
+    const { orderId } = req.body
+    const order = await Order.findById(orderId)
+
+    if (!order) {
+      res.status(404)
+      throw new Error("Order not found")
+    }
+
+    if (order.isPaid) {
+      res.status(400)
+      throw new Error("Order is already paid")
+    }
+
+    if (!process.env.KHALTI_SECRET_KEY) {
+      console.error("KHALTI_SECRET_KEY is missing in .env")
+      res.status(500)
+      throw new Error("Server configuration error: Khalti key missing")
+    }
+
+    const payload = {
+      return_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/orders/${orderId}`,
+      website_url: process.env.FRONTEND_URL || "http://localhost:5173",
+      amount: Math.round(order.totalPrice * 100), // Khalti expects amount in paisa (WARNING: Assumes 1:1 currency or converts USD->NPR implicitly by value)
+      purchase_order_id: order._id,
+      purchase_order_name: `Order #${order._id}`,
+      customer_info: {
+        name: req.user.name,
+        email: req.user.email,
+      },
+    }
+
+    console.log("Initiating Khalti Payment with payload:", JSON.stringify(payload, null, 2))
+
+    try {
+      const response = await axios.post(
+        "https://a.khalti.com/api/v2/epayment/initiate/",
+        payload,
+        {
+          headers: {
+            Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      
+      console.log("Khalti Response:", response.data)
+      res.json(response.data)
+    } catch (error) {
+      console.error("Khalti Initiate Error Details:", error.response?.data || error.message)
+      res.status(400)
+      // Pass the specific Khalti error message back to frontend if available
+      const khaltiMessage = error.response?.data?.detail || error.response?.data?.amount?.[0] || "Failed to initiate Khalti payment"
+      throw new Error(khaltiMessage)
+    }
+  })
+)
+
+// @route   POST /api/payment/khalti/verify
+// @desc    Verify Khalti payment
+// @access  Private
+router.post(
+  "/khalti/verify",
+  protect,
+  asyncHandler(async (req, res) => {
+    const { pidx } = req.body
+
+    try {
+      const response = await axios.post(
+        "https://a.khalti.com/api/v2/epayment/lookup/",
+        { pidx },
+        {
+          headers: {
+            Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+
+      const { status, total_amount, purchase_order_id } = response.data
+
+      if (status === "Completed") {
+        const order = await Order.findById(purchase_order_id)
+
+        if (order) {
+          order.isPaid = true
+          order.paidAt = Date.now()
+          order.status = "processing"
+          order.paymentMethod = "Khalti"
+          order.paymentResult = {
+            id: pidx,
+            status,
+            update_time: new Date().toISOString(),
+          }
+          await order.save()
+
+          res.json({ success: true, order })
+        } else {
+          res.status(404)
+          throw new Error("Order not found")
+        }
+      } else {
+        res.status(400)
+        throw new Error("Payment not completed")
+      }
+    } catch (error) {
+       console.error("Khalti Verify Error:", error.response?.data || error.message)
+       res.status(400)
+       throw new Error("Payment verification failed")
+    }
+  })
+)
 
 export default router

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import api from "../lib/api"
 import { ArrowLeft, MapPin, Package, CreditCard, Clock, CheckCircle } from "lucide-react"
+import toast from "react-hot-toast"
 
 export default function OrderDetailPage() {
   const { id } = useParams()
@@ -12,8 +13,30 @@ export default function OrderDetailPage() {
   const [error, setError] = useState("")
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const pidx = searchParams.get("pidx")
+
+    if (pidx) {
+      verifyKhaltiPayment(pidx)
+    }
+
     fetchOrder()
   }, [id])
+
+  const verifyKhaltiPayment = async (pidx) => {
+    try {
+      const res = await api.post("/payment/khalti/verify", { pidx })
+      if (res.data.success) {
+        toast.success("Payment verified successfully!")
+        fetchOrder()
+        const newUrl = window.location.pathname
+        window.history.replaceState({}, document.title, newUrl)
+      }
+    } catch (error) {
+      console.error(error)
+      // toast.error(error.response?.data?.message || "Payment verification failed")
+    }
+  }
 
   const fetchOrder = async () => {
     try {
