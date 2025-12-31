@@ -20,7 +20,7 @@ export default function AdminUsers() {
     try {
       setLoading(true)
       const res = await api.get(`/admin/users?page=${page}&limit=10`)
-      setUsers(res.data.users || [])
+      setUsers(res.data.data || [])
       if (res.data?.pagination) {
         setTotalPages(res.data.pagination.pages)
       }
@@ -100,8 +100,8 @@ export default function AdminUsers() {
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === "admin"
-                          ? "bg-purple-100 text-purple-800 border-purple-200"
-                          : "bg-blue-50 text-blue-700 border-blue-200"
+                        ? "bg-purple-100 text-purple-800 border-purple-200"
+                        : "bg-blue-50 text-blue-700 border-blue-200"
                         }`}
                     >
                       {user.role === "admin" ? <ShieldCheck className="w-3 h-3" /> : <User className="w-3 h-3" />}
@@ -117,8 +117,8 @@ export default function AdminUsers() {
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.isActive
-                          ? "bg-green-100 text-green-800 border-green-200"
-                          : "bg-red-100 text-red-800 border-red-200"
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : "bg-red-100 text-red-800 border-red-200"
                         }`}
                     >
                       {user.isActive ? "Active" : "Inactive"}

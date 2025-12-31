@@ -148,8 +148,8 @@ export default function OrderDetailPage() {
                 />
                 <div className="flex-1">
                   <Link
-                    to={`/products/${item.product?._id || item.product}`}
-                    className="font-semibold text-lg text-zinc-900 hover:text-primary-600 transition-colors"
+                    to={item.product ? `/products/${item.product._id || item.product}` : "#"}
+                    className={`font-semibold text-lg text-zinc-900 transition-colors ${item.product ? "hover:text-primary-600" : "cursor-default"}`}
                   >
                     {item.name || item.product?.name}
                   </Link>
