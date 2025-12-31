@@ -1,14 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { Loader2, ArrowRight } from "lucide-react"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" })
-  const { login, loading } = useAuthStore()
+  const { login, loading, user } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) {
+      navigate("/")
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

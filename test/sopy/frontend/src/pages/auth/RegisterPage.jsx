@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { toast } from "react-toastify" // Note: Check consistency with react-hot-toast if that's what we switched to, but authStore uses one. 
@@ -16,8 +16,14 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   })
-  const { register, loading } = useAuthStore()
+  const { register, loading, user } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) {
+      navigate("/")
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

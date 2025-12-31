@@ -131,18 +131,18 @@ export default function AdminDashboard() {
 
 function StatsCard({ title, value, icon: Icon, color, trend }) {
   return (
-    <div className="glass-card relative overflow-hidden group">
-      <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10 transition-transform group-hover:scale-150 ${color}`}></div>
+    <div className="glass-card relative overflow-hidden group hover:shadow-lg transition-shadow duration-300">
+      <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-10 transition-transform duration-500 group-hover:scale-150 ${color}`}></div>
       <div className="flex items-center justify-between relative z-10">
         <div>
           <p className="text-sm font-medium text-zinc-500 mb-1">{title}</p>
-          <h3 className="text-2xl font-bold text-zinc-900">{value}</h3>
-          {trend && <p className="text-xs font-medium text-emerald-600 mt-2 flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" /> {trend} from last month
+          <h3 className="text-3xl font-bold text-zinc-900 tracking-tight">{value}</h3>
+          {trend && <p className="text-xs font-semibold text-emerald-600 mt-2 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
+            <TrendingUp className="w-3 h-3" /> {trend}
           </p>}
         </div>
-        <div className={`p-3 rounded-xl text-white shadow-lg ${color} shadow-${color.replace('bg-', '')}/30`}>
-          <Icon className="w-6 h-6" />
+        <div className={`p-4 rounded-2xl text-white shadow-xl transform group-hover:rotate-12 transition-transform duration-300 ${color} shadow-${color.replace('bg-', '')}/30`}>
+          <Icon className="w-7 h-7" />
         </div>
       </div>
     </div>
