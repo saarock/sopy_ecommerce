@@ -92,7 +92,7 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState("")
   const [loading, setLoading] = useState(true)
   const [paymentMethod, setPaymentMethod] = useState("Stripe")
-  const [processingKhalti, setProcessingKhalti] = useState(false)
+  const [processingEsewa, setProcessingEsewa] = useState(false)
 
   useEffect(() => {
     fetchCart()
@@ -136,30 +136,59 @@ export default function CheckoutPage() {
         })
         setClientSecret(paymentData.data.data.clientSecret)
         toast.success("Order created! Please complete payment.")
-      } else if (paymentMethod === "Khalti") {
-        setProcessingKhalti(true)
-        const khaltiData = await api.post("/payment/khalti/initiate", {
-          orderId: newOrder._id,
-        })
-        if (khaltiData.data.payment_url) {
-          window.location.href = khaltiData.data.payment_url
-        } else {
-          toast.error("Failed to initiate Khalti payment")
-          setProcessingKhalti(false)
+      } else if (paymentMethod === "eSewa") { // Handling eSewa payment
+        setProcessingEsewa(true)
+        try {
+          // 1. Get Signature from backend
+          const signatureRes = await api.post("/payment/esewa/signature", {
+            orderId: newOrder._id,
+          })
+
+          const { signature, totalAmount, transactionUuid, productCode, url } = signatureRes.data
+
+          // 2. Create Hidden Form
+          const form = document.createElement("form")
+          form.setAttribute("method", "POST")
+          form.setAttribute("action", url)
+          // form.setAttribute("target", "_blank") // Uncomment if you want new tab
+
+          const params = {
+            amount: totalAmount,
+            tax_amount: "0",
+            total_amount: totalAmount,
+            transaction_uuid: transactionUuid,
+            product_code: productCode,
+            product_service_charge: "0",
+            product_delivery_charge: "0",
+            success_url: `${window.location.origin}/orders/${newOrder._id}`,
+            failure_url: `${window.location.origin}/orders/${newOrder._id}?error=payment_failed`,
+            signed_field_names: "total_amount,transaction_uuid,product_code",
+            signature: signature,
+          }
+
+          for (const key in params) {
+            const hiddenField = document.createElement("input")
+            hiddenField.setAttribute("type", "hidden")
+            hiddenField.setAttribute("name", key)
+            hiddenField.setAttribute("value", params[key])
+            form.appendChild(hiddenField)
+          }
+
+          document.body.appendChild(form)
+          form.submit()
+
+          // Cleanup handled by page navigation/reload
+        } catch (err) {
+          console.error("eSewa Error", err)
+          toast.error(err.response?.data?.message || "Failed to initiate eSewa payment")
+          setProcessingEsewa(false)
         }
       }
 
     } catch (error) {
       console.error(error)
-      let message = error.response?.data?.message || "Failed to create order"
-
-      // Check for 404 on Khalti route specifically
-      if (paymentMethod === "Khalti" && error.response?.status === 404) {
-        message = "Khalti service not found. Please restart your backend server."
-      }
-
-      toast.error(message)
-      setProcessingKhalti(false)
+      toast.error(error.response?.data?.message || "Failed to create order")
+      setProcessingEsewa(false)
     }
   }
 
@@ -179,7 +208,7 @@ export default function CheckoutPage() {
         {/* Left Col: Shipping & Payment */}
         <div className="space-y-8">
           {/* Section 1: Shipping */}
-          <div className={`glass-card pt-6 pb-6 ${clientSecret || processingKhalti ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
+          <div className={`glass-card pt-6 pb-6 ${clientSecret || processingEsewa ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
             <h2 className="text-xl font-bold text-zinc-900 mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-primary-500" />
               Shipping Information
@@ -255,36 +284,40 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setPaymentMethod("Stripe")}
                     className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Stripe"
-                      ? "border-primary-500 bg-primary-50 ring-1 ring-primary-500 text-primary-700"
-                      : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                        ? "border-primary-500 bg-primary-50 ring-1 ring-primary-500 text-primary-700"
+                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
                       }`}
                   >
-                    <CreditCard className="w-6 h-6 mb-2" />
-                    <span className="font-medium text-sm">Credit Card</span>
+                    <CreditCard className="w-8 h-8 mb-3" />
+                    <span className="font-bold">Credit / Debit Card</span>
+                    <span className="text-xs text-zinc-500 mt-1">Stripe Secure</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod("Khalti")}
-                    className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "Khalti"
-                      ? "border-purple-500 bg-purple-50 ring-1 ring-purple-500 text-purple-700"
-                      : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
+                    onClick={() => setPaymentMethod("eSewa")}
+                    className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${paymentMethod === "eSewa"
+                        ? "border-green-500 bg-green-50 ring-1 ring-green-500 text-green-700"
+                        : "border-zinc-200 hover:border-zinc-300 text-zinc-600"
                       }`}
                   >
-                    <Wallet className="w-6 h-6 mb-2" />
-                    <span className="font-medium text-sm">Khalti Wallet</span>
+                    <div className="h-8 mb-3 flex items-center justify-center bg-green-500 rounded px-2">
+                      <span className="text-white font-bold text-lg">eSewa</span>
+                    </div>
+                    <span className="font-bold">eSewa Mobile Wallet</span>
+                    <span className="text-xs text-zinc-500 mt-1 text-center">Fast & Secure</span>
                   </button>
                 </div>
               </div>
 
-              {!clientSecret && !processingKhalti && (
+              {!clientSecret && !processingEsewa && (
                 <button type="submit" className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
-                  {paymentMethod === "Stripe" ? "Continue to Card Payment" : "Pay with Khalti"} <ArrowRight className="w-4 h-4" />
+                  {paymentMethod === "Stripe" ? "Continue to Card Payment" : "Pay with eSewa"} <ArrowRight className="w-4 h-4" />
                 </button>
               )}
 
-              {processingKhalti && (
-                <div className="w-full mt-6 flex items-center justify-center gap-2 text-purple-600 font-medium">
-                  <Loader2 className="w-5 h-5 animate-spin" /> Redirecting to Khalti...
+              {processingEsewa && (
+                <div className="w-full mt-6 flex items-center justify-center gap-2 text-green-600 font-medium">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Redirecting to eSewa...
                 </div>
               )}
             </form>

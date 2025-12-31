@@ -14,27 +14,30 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search)
-    const pidx = searchParams.get("pidx")
+    // Check for eSewa response 'data' param (encoded base64)
+    const encodedData = searchParams.get("data")
+    // Legacy Khalti 'pidx' might be in history, ignore it or remove it
 
-    if (pidx) {
-      verifyKhaltiPayment(pidx)
+    if (encodedData) {
+      verifyEsewaPayment(encodedData)
     }
 
     fetchOrder()
   }, [id])
 
-  const verifyKhaltiPayment = async (pidx) => {
+  const verifyEsewaPayment = async (encodedData) => {
     try {
-      const res = await api.post("/payment/khalti/verify", { pidx })
+      const res = await api.post("/payment/esewa/verify", { encodedData })
       if (res.data.success) {
         toast.success("Payment verified successfully!")
         fetchOrder()
+        // Clean URL
         const newUrl = window.location.pathname
         window.history.replaceState({}, document.title, newUrl)
       }
     } catch (error) {
-      console.error(error)
-      // toast.error(error.response?.data?.message || "Payment verification failed")
+      console.error("eSewa Verification Error", error)
+      toast.error("eSewa payment verification failed")
     }
   }
 
@@ -188,7 +191,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {order.paymentStatus === "paid" && (
+        {order.isPaid && (
           <div className="bg-green-50 border-t border-green-100 p-4 text-center">
             <p className="text-green-800 font-medium flex items-center justify-center gap-2">
               <CheckCircle className="w-5 h-5" />
