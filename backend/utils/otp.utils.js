@@ -1,0 +1,58 @@
+import nodemailer from "nodemailer"
+import dotenv from "dotenv"
+
+dotenv.config()
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_PORT === "465", // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+})
+
+/**
+ * Send OTP email
+ * @param {string} email - Recipient email
+ * @param {string} otp - OTP code
+ */
+export const sendOTPEmail = async (email, otp) => {
+  const mailOptions = {
+    from: `"Sopy E-commerce" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: "Verify your email - Sopy E-commerce",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+        <h2 style="color: #333; text-align: center;">Email Verification</h2>
+        <p>Hello,</p>
+        <p>Your verification code for Sopy E-commerce is:</p>
+        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border-radius: 5px;">
+          ${otp}
+        </div>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you did not request this code, please ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #888; text-align: center;">&copy; 2026 Sopy E-commerce. All rights reserved.</p>
+      </div>
+    `,
+  }
+
+  try {
+    const info = await transporter.sendMail(mailOptions)
+    console.log("Email sent: %s", info.messageId)
+    return true
+  } catch (error) {
+    console.error("Error sending email:", error)
+    return false
+  }
+}
+
+/**
+ * Generate 6-digit OTP
+ * @returns {string} 6-digit OTP
+ */
+export const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
