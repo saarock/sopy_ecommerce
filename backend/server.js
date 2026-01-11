@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import cors from "cors"
-
+import helmet from "helmet"
 import rateLimit from "express-rate-limit"
 
 // Load environment variables
@@ -23,7 +23,8 @@ import { errorHandler } from "./middleware/error.middleware.js"
 
 const app = express()
 
-
+// Security middleware
+app.use(helmet())
 
 // Rate limiting
 const limiter = rateLimit({
