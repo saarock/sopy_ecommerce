@@ -10,7 +10,7 @@ export const generateTokenAndSetCookie = (res, userId) => {
     expires: new Date(Date.now() + (process.env.COOKIE_EXPIRE || 7) * 24 * 60 * 60 * 1000),
     httpOnly: true, // Prevents XSS attacks
     secure: process.env.NODE_ENV === "production", // HTTPS only in production
-    sameSite: "lax", // Better for varying environments and redirects
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // None for cross-site in production
     path: "/",
   }
 
