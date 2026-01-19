@@ -88,6 +88,17 @@ export const useAuthStore = create(
           throw error
         }
       },
+
+      changePassword: async (passwordData) => {
+        try {
+          const { data } = await api.put("/auth/change-password", passwordData)
+          toast.success(data.message)
+          return data
+        } catch (error) {
+          toast.error(error.response?.data?.message || "Password change failed")
+          throw error
+        }
+      },
     }),
     {
       name: "auth-storage",

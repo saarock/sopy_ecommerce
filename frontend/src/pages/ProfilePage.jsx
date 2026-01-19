@@ -2,10 +2,8 @@
 
 import { useState } from "react"
 import { useAuthStore } from "../store/authStore"
-import api from "../lib/api"
-
 export default function ProfilePage() {
-  const { user, setUser } = useAuthStore()
+  const { user, updateProfile, changePassword } = useAuthStore()
   const [activeTab, setActiveTab] = useState("profile")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
@@ -14,7 +12,18 @@ export default function ProfilePage() {
     name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
+    address: user?.address || {
+      street: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
+    },
   })
+
+  // Update local state when user changes (e.g. after update)
+  // But we need to be careful not to overwrite user input while typing if this triggers too often.
+  // Generally user from store is stable until update.
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -24,13 +33,15 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
+    setLoading(true)
+    setMessage({ type: "", text: "" })
+
     try {
-      setLoading(true)
-      const data = await api.put("/users/profile", profileData)
-      setUser(data)
+      await updateProfile(profileData)
       setMessage({ type: "success", text: "Profile updated successfully!" })
     } catch (err) {
-      setMessage({ type: "error", text: err.response?.data?.message || "Failed to update profile" })
+      // Store already shows toast, but we can set local message too if we want persistence
+      setMessage({ type: "error", text: "Failed to update profile. Please try again." })
     } finally {
       setLoading(false)
     }
@@ -44,16 +55,18 @@ export default function ProfilePage() {
       return
     }
 
+    setLoading(true)
+    setMessage({ type: "", text: "" })
+
     try {
-      setLoading(true)
-      await api.put("/users/password", {
+      await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       })
       setMessage({ type: "success", text: "Password changed successfully!" })
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
     } catch (err) {
-      setMessage({ type: "error", text: err.response?.data?.message || "Failed to change password" })
+      setMessage({ type: "error", text: "Failed to change password." })
     } finally {
       setLoading(false)
     }
@@ -66,11 +79,10 @@ export default function ProfilePage() {
 
         {message.text && (
           <div
-            className={`mb-4 px-4 py-3 rounded ${
-              message.type === "success"
+            className={`mb-4 px-4 py-3 rounded ${message.type === "success"
                 ? "bg-green-50 border border-green-200 text-green-700"
                 : "bg-red-50 border border-red-200 text-red-700"
-            }`}
+              }`}
           >
             {message.text}
           </div>
@@ -81,21 +93,19 @@ export default function ProfilePage() {
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === "profile"
+                className={`px-6 py-4 text-sm font-medium ${activeTab === "profile"
                     ? "border-b-2 border-blue-600 text-blue-600"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 Profile Information
               </button>
               <button
                 onClick={() => setActiveTab("password")}
-                className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === "password"
+                className={`px-6 py-4 text-sm font-medium ${activeTab === "password"
                     ? "border-b-2 border-blue-600 text-blue-600"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 Change Password
               </button>
