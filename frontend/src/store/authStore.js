@@ -64,6 +64,10 @@ export const useAuthStore = create(
         }
       },
 
+      clearUser: () => {
+        set({ user: null })
+      },
+
       getMe: async () => {
         try {
           const { data } = await api.get("/auth/me")
