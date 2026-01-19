@@ -214,10 +214,10 @@ export default function AdminProducts() {
                   <td className="px-6 py-4">
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border ${product.stock > 10
-                          ? "bg-green-100 text-green-800 border-green-200"
-                          : product.stock > 0
-                            ? "bg-amber-100 text-amber-800 border-amber-200"
-                            : "bg-red-100 text-red-800 border-red-200"
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : product.stock > 0
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : "bg-red-100 text-red-800 border-red-200"
                         }`}
                     >
                       {product.stock} in stock
@@ -336,15 +336,31 @@ export default function AdminProducts() {
                 />
               </div>
 
-              <input
-                placeholder="Category"
+              <select
                 value={formData.category}
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
                 className="w-full border px-4 py-2 rounded"
                 required
-              />
+              >
+                <option value="">Select Category</option>
+                {[
+                  "Electronics",
+                  "Clothing",
+                  "Books",
+                  "Home & Garden",
+                  "Sports",
+                  "Toys",
+                  "Beauty",
+                  "Food",
+                  "Other",
+                ].map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
 
               <input
                 placeholder="Image URLs (comma separated)"
