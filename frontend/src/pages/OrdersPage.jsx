@@ -113,7 +113,7 @@ export default function OrdersPage() {
                   <div className="border-t border-zinc-100 mt-4 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="text-center sm:text-left">
                       <p className="text-sm text-zinc-500 mb-1">Total Amount</p>
-                      <p className="text-3xl font-bold text-primary-600">${Number(order.totalPrice || 0).toFixed(2)}</p>
+                      <p className="text-3xl font-bold text-primary-600">Rs. {Number(order.totalPrice || 0).toFixed(2)}</p>
                     </div>
                     <Link
                       to={`/orders/${order._id}`}

@@ -199,10 +199,10 @@ export default function ProductDetailPage() {
 
             <div className="mb-8 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
               <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-primary-600">${Number(product.price || 0).toFixed(2)}</span>
-                {product.compareAtPrice && (
+                <span className="text-4xl font-bold text-primary-600">Rs. {Number(product.price || 0).toFixed(2)}</span>
+                {product.compareAtPrice > product.price && (
                   <span className="text-xl text-zinc-400 line-through">
-                    ${Number(product.compareAtPrice || 0).toFixed(2)}
+                    Rs. {Number(product.compareAtPrice || 0).toFixed(2)}
                   </span>
                 )}
               </div>

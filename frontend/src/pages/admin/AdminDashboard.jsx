@@ -87,7 +87,7 @@ export default function AdminDashboard() {
                     <p className="text-sm text-zinc-500">{product.totalSold} sold</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-zinc-900">${product.revenue.toFixed(2)}</p>
+                    <p className="font-bold text-zinc-900">Rs. {product.revenue.toFixed(2)}</p>
                   </div>
                 </div>
               ))}

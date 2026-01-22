@@ -366,7 +366,7 @@ export default function CheckoutPage() {
                         <p className="text-sm font-medium text-zinc-900 line-clamp-2">{item.product.name}</p>
                         <p className="text-xs text-zinc-500 mt-1">Qty: {item.quantity}</p>
                       </div>
-                      <span className="text-sm font-bold text-zinc-900">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="text-sm font-bold text-zinc-900">Rs. {(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -374,11 +374,11 @@ export default function CheckoutPage() {
                 <div className="border-t border-zinc-100 pt-4 space-y-2">
                   <div className="flex justify-between text-zinc-600">
                     <span>Subtotal</span>
-                    <span>${cart.totalAmount.toFixed(2)}</span>
+                    <span>Rs. {cart.totalAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-zinc-600">
                     <span>Shipping</span>
-                    <span>{cart.totalAmount > 100 ? "FREE" : "$10.00"}</span>
+                    <span>{cart.totalAmount > 100 ? "FREE" : "Rs. 10.00"}</span>
                   </div>
                   <div className="flex justify-between text-zinc-600">
                     <span>Tax (10%)</span>

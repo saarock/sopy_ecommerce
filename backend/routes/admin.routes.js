@@ -343,8 +343,34 @@ router.get(
 
     const filter = {}
 
+    console.log("RAW QUERY:", req.query)
+
     if (req.query.status) {
       filter.status = req.query.status
+    }
+
+    if (req.query.search) {
+      const rawSearch = String(req.query.search)
+      const searchTerm = rawSearch.trim().replace(/^#/, "")
+
+      if (searchTerm) {
+        if (searchTerm.match(/^[0-9a-fA-F]{24}$/)) {
+          // Exact match
+          filter._id = searchTerm
+        } else {
+          // Partial match via In-Memory ID filtering (Fallback for strict compatibility)
+          // 1. Fetch all IDs (lightweight)
+          const allOrders = await Order.find({}, "_id")
+          
+          // 2. Filter in JS (Guaranteed string matching)
+          const matchingIds = allOrders
+            .filter(order => order._id.toString().toLowerCase().includes(searchTerm.toLowerCase()))
+            .map(order => order._id)
+
+          // 3. Apply to filter
+          filter._id = { $in: matchingIds }
+        }
+      }
     }
 
     if (req.query.isPaid) {

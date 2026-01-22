@@ -144,7 +144,7 @@ export default function HomePage() {
                       {product.name}
                     </h3>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-2xl font-bold text-zinc-900">${product.price.toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-zinc-900">Rs. {product.price.toFixed(2)}</span>
                       {product.rating > 0 && (
                         <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />

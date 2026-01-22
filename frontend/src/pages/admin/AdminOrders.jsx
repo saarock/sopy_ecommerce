@@ -9,6 +9,7 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Pagination State
   const [page, setPage] = useState(1)
@@ -35,10 +36,18 @@ export default function AdminOrders() {
     return img
   }
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (currPage = page, searchTerm = searchQuery) => {
     try {
+      console.log("Fetching orders:", { currPage, searchTerm })
       setLoading(true)
-      const res = await api.get(`/admin/orders?page=${page}&limit=10`)
+
+      const res = await api.get("/admin/orders", {
+        params: {
+          page: currPage,
+          limit: 10,
+          search: searchTerm,
+        },
+      })
 
       // backend returns: { success, data: [...], pagination }
       setOrders(res.data?.data || [])
@@ -52,6 +61,15 @@ export default function AdminOrders() {
       setLoading(false)
     }
   }
+
+  // ... (existing code for handleStatusUpdate, etc.)
+
+  // NOTE: Need to scroll down to find the render part for input
+  // Since replace_file_content works on line ranges, I'll split this if needed or verify indices.
+  // The start line 12 covers the state, the fetchOrders is around 39. The input is around 125.
+  // The tool works on contiguous blocks. I need to be careful.
+  // I will just replace the top section first.
+
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
@@ -111,7 +129,28 @@ export default function AdminOrders() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-zinc-900">Orders Management</h1>
         <div className="flex gap-2">
-          {/* Add search filter here if needed */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              setPage(1)
+              fetchOrders(1, searchQuery)
+            }}
+            className="flex gap-2"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by Order ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none text-sm w-64"
+              />
+              <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+            <button type="submit" className="btn-primary px-4 py-2 text-sm">
+              Search
+            </button>
+          </form>
         </div>
       </div>
 
@@ -311,8 +350,8 @@ export default function AdminOrders() {
                         <p className="text-sm text-zinc-500">Qty: {item.quantity}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-zinc-900">${(item.price * item.quantity).toFixed(2)}</p>
-                        <p className="text-xs text-zinc-500">${item.price} each</p>
+                        <p className="font-bold text-zinc-900">Rs. {(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="text-xs text-zinc-500">Rs. {item.price} each</p>
                       </div>
                     </div>
                   ))}
@@ -324,7 +363,7 @@ export default function AdminOrders() {
                 <div className="w-full sm:w-72 bg-zinc-50 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between text-zinc-600">
                     <span>Subtotal</span>
-                    <span>${Number(selectedOrder.itemsPrice || 0).toFixed(2)}</span>
+                    <span>Rs. {Number(selectedOrder.itemsPrice || 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-zinc-600">
                     <span>Tax</span>

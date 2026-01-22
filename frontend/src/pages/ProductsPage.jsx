@@ -246,7 +246,7 @@ export default function ProductsPage() {
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{product.description}</p>
 
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-2xl font-bold text-primary-600">${Number(product.price || 0).toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-primary-600">Rs. {Number(product.price || 0).toFixed(2)}</span>
                         {product.rating > 0 && (
                           <span className="text-sm text-gray-600">
                             ⭐ {Number(product.rating || 0).toFixed(1)} ({product.numReviews || 0})
@@ -277,9 +277,8 @@ export default function ProductsPage() {
                         params.set("page", page.toString())
                         setSearchParams(params)
                       }}
-                      className={`px-4 py-2 rounded-lg ${
-                        page === pagination.page ? "bg-primary-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
-                      }`}
+                      className={`px-4 py-2 rounded-lg ${page === pagination.page ? "bg-primary-600 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
                     >
                       {page}
                     </button>

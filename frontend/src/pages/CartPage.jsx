@@ -69,7 +69,7 @@ export default function CartPage() {
                 >
                   {item.product.name}
                 </Link>
-                <p className="text-gray-600 text-sm mb-2">${item.price.toFixed(2)} each</p>
+                <p className="text-gray-600 text-sm mb-2">Rs. {item.price.toFixed(2)} each</p>
 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export default function CartPage() {
               </div>
 
               <div className="text-right">
-                <p className="text-xl font-bold text-primary-600">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="text-xl font-bold text-primary-600">Rs. {(item.price * item.quantity).toFixed(2)}</p>
                 {item.quantity >= item.product.stock && <p className="text-xs text-red-600 mt-1">Max stock reached</p>}
               </div>
             </div>
