@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const verifyRecaptcha = async (token) => {
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY || "6Lef1FQsAAAAAPpG4ZoDWRuCXQahGgD_7xLWJhMS";
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
     if (!secretKey) {
         console.warn("RECAPTCHA_SECRET_KEY is not set. Skipping verification (dev mode).");

@@ -77,16 +77,6 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 disabled={loading}
               />
-              <input
-                id="password"
-                type="password"
-                required
-                className="input focus:ring-primary-500"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-                disabled={loading}
-              />
             </div>
 
             <div className="flex justify-center">

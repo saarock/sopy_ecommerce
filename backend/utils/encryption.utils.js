@@ -27,10 +27,15 @@ export const decrypt = (text) => {
     const textParts = text.split(":")
     if (textParts.length !== 2) return text // Not encrypted or invalid format
 
-    const iv = Buffer.from(textParts[0], "hex")
-    const encryptedText = Buffer.from(textParts[1], "hex")
-    const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv)
-    let decrypted = decipher.update(encryptedText)
-    decrypted = Buffer.concat([decrypted, decipher.final()])
-    return decrypted.toString()
+    try {
+        const iv = Buffer.from(textParts[0], "hex")
+        const encryptedText = Buffer.from(textParts[1], "hex")
+        const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv)
+        let decrypted = decipher.update(encryptedText)
+        decrypted = Buffer.concat([decrypted, decipher.final()])
+        return decrypted.toString()
+    } catch (error) {
+        console.error("Decryption failed:", error.message)
+        return text // Return original text (or null) if decryption fails, to avoid crashing
+    }
 }
