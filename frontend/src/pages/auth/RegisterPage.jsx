@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
-import { toast } from "react-toastify" // Note: Check consistency with react-hot-toast if that's what we switched to, but authStore uses one. 
+import { toast } from "react-toastify"
+import PasswordStrengthMeter from "../../components/PasswordStrengthMeter" // Note: Check consistency with react-hot-toast if that's what we switched to, but authStore uses one. 
 // Actually current codebase uses react-hot-toast in store but RegisterPage imports react-toastify. 
 // I should use toast from react-hot-toast to be consistent if that is the main one.
 // Let's stick to consistent UI. 
@@ -113,8 +114,8 @@ export default function RegisterPage() {
                   onClick={handleSendOtp}
                   disabled={loading || otpSent || !formData.email}
                   className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${otpSent
-                      ? "bg-emerald-100 text-emerald-700 cursor-default"
-                      : "bg-primary-600 text-white hover:bg-primary-700 shadow-sm disabled:opacity-50"
+                    ? "bg-emerald-100 text-emerald-700 cursor-default"
+                    : "bg-primary-600 text-white hover:bg-primary-700 shadow-sm disabled:opacity-50"
                     }`}
                 >
                   {otpSent ? "Sent" : "Send OTP"}
@@ -159,6 +160,7 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   disabled={loading}
                 />
+                <PasswordStrengthMeter password={formData.password} />
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 mb-2">

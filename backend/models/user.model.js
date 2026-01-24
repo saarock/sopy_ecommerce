@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
+import { encrypt } from "../utils/encryption.utils.js"
 
 const userSchema = new mongoose.Schema(
   {
@@ -46,6 +47,30 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    passwordHistory: {
+      type: [
+        {
+          password: {
+            type: String,
+            required: true,
+          },
+          changedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      select: false,
+    },
+    passwordChangedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: Date,
   },
   {
     timestamps: true,
@@ -54,11 +79,46 @@ const userSchema = new mongoose.Schema(
 
 // Encrypt password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next()
+  // Handle Phone Encryption
+  if (this.isModified("phone") && this.phone) {
+    this.phone = encrypt(this.phone)
   }
+
+  if (!this.isModified("password")) {
+    return next()
+  }
+
+  // Password Reuse Check
+  // We assume passwordHistory is available (selected). If strict check needed, ensure it's loaded.
+  if (this.passwordHistory && this.passwordHistory.length > 0) {
+    for (const entry of this.passwordHistory) {
+      const isMatch = await bcrypt.compare(this.password, entry.password)
+      if (isMatch) {
+        const error = new Error("Cannot reuse any of the last 5 passwords")
+        return next(error)
+      }
+    }
+  }
+
   const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
+  const hashedPassword = await bcrypt.hash(this.password, salt)
+
+  // Add to history using the NEW hash
+  // Initialize if undefined
+  if (!this.passwordHistory) this.passwordHistory = []
+
+  this.passwordHistory.unshift({
+    password: hashedPassword,
+    changedAt: Date.now()
+  })
+
+  // Keep only last 5
+  if (this.passwordHistory.length > 5) {
+    this.passwordHistory = this.passwordHistory.slice(0, 5)
+  }
+
+  this.password = hashedPassword
+  this.passwordChangedAt = Date.now()
 })
 
 // Generate and hash password token

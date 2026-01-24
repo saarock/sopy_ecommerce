@@ -8,6 +8,8 @@ import OTP from "../models/otp.model.js"
 import { generateTokenAndSetCookie, clearCookie } from "../utils/jwt.utils.js"
 import { sendOTPEmail, generateOTP, sendResetPasswordEmail } from "../utils/otp.utils.js"
 import crypto from "crypto"
+import { encrypt, decrypt } from "../utils/encryption.utils.js"
+import { verifyRecaptcha } from "../utils/recaptcha.utils.js"
 
 const router = express.Router()
 
@@ -139,14 +141,46 @@ router.post(
       throw error
     }
 
-    const { email, password } = req.body
+    const { email, password, recaptchaToken } = req.body
+
+    // Verify reCAPTCHA
+    if (recaptchaToken) { // Make optional based on frontend impl? Or mandatory? 
+      // User requested adding it, imply mandatory if implemented.
+      // However, existing tests/clients might break.
+      // Let's check: if token provided, verify it. If we want to enforce it, we just check !token.
+      // Given user asked for "CAPTCHA / lockout", let's verify if present. 
+      // Frontend will force presence.
+      const isHuman = await verifyRecaptcha(recaptchaToken)
+      if (!isHuman) {
+        const error = new Error("CAPTCHA verification failed. Are you a robot?")
+        error.statusCode = 400
+        throw error
+      }
+    } else {
+      // Should we enforce it? Yes, otherwise what's the point?
+      // But maybe only enforce after failed attempts? 
+      // "CAPTCHA / lockout" implies lockout OR captcha.
+      // Let's enforce it always for login if we are implementing it.
+      // But wait, user just gave me keys. I should enforce it.
+      const error = new Error("Please complete the CAPTCHA")
+      error.statusCode = 400
+      throw error
+    }
 
     // Check for user with password field
-    const user = await User.findOne({ email }).select("+password")
+    const user = await User.findOne({ email }).select("+password +passwordHistory")
 
     if (!user) {
       const error = new Error("Invalid credentials")
       error.statusCode = 401
+      throw error
+    }
+
+    // Check account lockout
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const remainingTime = Math.ceil((user.lockUntil - Date.now()) / 60000)
+      const error = new Error(`Account locked. Please try again in ${remainingTime} minutes.`)
+      error.statusCode = 423
       throw error
     }
 
@@ -161,10 +195,30 @@ router.post(
     const isPasswordMatch = await user.matchPassword(password)
 
     if (!isPasswordMatch) {
+      // Increment failed attempts
+      user.failedLoginAttempts += 1
+
+      // Lock account if attempts >= 5
+      if (user.failedLoginAttempts >= 5) {
+        user.lockUntil = Date.now() + 15 * 60 * 1000 // 15 minutes
+        user.failedLoginAttempts = 0 // Optional: reset attempts after locking or keep them? Usually reset or keep. Let's reset so they get fresh attempts after timeout.
+      }
+
+      await user.save({ validateBeforeSave: false })
+
       const error = new Error("Invalid credentials")
       error.statusCode = 401
       throw error
     }
+
+    // Reset failed attempts on success
+    user.failedLoginAttempts = 0
+    user.lockUntil = undefined
+    await user.save({ validateBeforeSave: false })
+
+    // Check password expiry (90 days)
+    const ninetyDays = 90 * 24 * 60 * 60 * 1000
+    const isPasswordExpired = user.passwordChangedAt && Date.now() - user.passwordChangedAt > ninetyDays
 
     // Generate token and set HTTP-only cookie
     generateTokenAndSetCookie(res, user._id)
@@ -176,8 +230,9 @@ router.post(
         name: user.name,
         email: user.email,
         role: user.role,
+        passwordExpired: isPasswordExpired, // Inform frontend
       },
-      message: "Login successful",
+      message: isPasswordExpired ? "Login successful but password expired" : "Login successful",
     })
   }),
 )
@@ -206,6 +261,11 @@ router.get(
   protect,
   asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
+
+    // Decrypt phone if exists
+    if (user.phone) {
+      user.phone = decrypt(user.phone)
+    }
 
     res.status(200).json({
       success: true,
@@ -278,7 +338,7 @@ router.put(
       throw error
     }
 
-    const user = await User.findById(req.user._id).select("+password")
+    const user = await User.findById(req.user._id).select("+password +passwordHistory")
 
     // Check current password
     const isMatch = await user.matchPassword(currentPassword)
@@ -421,7 +481,7 @@ router.put(
     const user = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() },
-    })
+    }).select("+passwordHistory")
 
     if (!user) {
       const error = new Error("Invalid token")

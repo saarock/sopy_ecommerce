@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import axios from "axios"
 import toast from "react-hot-toast"
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import PasswordStrengthMeter from "../../components/PasswordStrengthMeter"
 
 export default function ResetPasswordPage() {
     const { token } = useParams()
@@ -18,6 +19,8 @@ export default function ResetPasswordPage() {
         watch,
         formState: { errors },
     } = useForm()
+
+    const passwordValue = watch("password")
 
     const onSubmit = async (data) => {
         setIsLoading(true)
@@ -77,6 +80,7 @@ export default function ResetPasswordPage() {
                             {errors.password && (
                                 <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
                             )}
+                            <PasswordStrengthMeter password={passwordValue} />
                         </div>
 
                         <div>
