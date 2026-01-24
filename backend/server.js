@@ -17,6 +17,7 @@ import cartRoutes from "./routes/cart.routes.js"
 import orderRoutes from "./routes/order.routes.js"
 import adminRoutes from "./routes/admin.routes.js"
 import paymentRoutes from "./routes/payment.routes.js"
+import { transporter } from "./utils/otp.utils.js"
 
 // Import error handler
 import { errorHandler } from "./middleware/error.middleware.js"
@@ -26,6 +27,11 @@ const app = express()
 // Security middleware
 app.use(helmet())
 
+// IMPORTANT: before rate limiter
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // most common fix
+}
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -33,6 +39,10 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
 })
 app.use("/api/", limiter)
+
+transporter.verify()
+  .then(() => console.log("✅ SMTP server is ready"))
+  .catch(err => console.error("❌ SMTP verify failed:", err.message))
 
 // CORS configuration
 app.use(
