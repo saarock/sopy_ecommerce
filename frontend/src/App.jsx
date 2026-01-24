@@ -11,6 +11,8 @@ import ProductsPage from "./pages/ProductsPage"
 import ProductDetailPage from "./pages/ProductDetailPage"
 import LoginPage from "./pages/auth/LoginPage"
 import RegisterPage from "./pages/auth/RegisterPage"
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage"
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage"
 import CartPage from "./pages/CartPage"
 import CheckoutPage from "./pages/CheckoutPage"
 import OrdersPage from "./pages/OrdersPage"
@@ -46,6 +48,8 @@ export default function App() {
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
             {/* Protected user routes */}
             <Route

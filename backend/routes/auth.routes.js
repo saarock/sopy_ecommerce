@@ -6,7 +6,8 @@ import { registerValidator, loginValidator } from "../utils/validators.js"
 import User from "../models/user.model.js"
 import OTP from "../models/otp.model.js"
 import { generateTokenAndSetCookie, clearCookie } from "../utils/jwt.utils.js"
-import { sendOTPEmail, generateOTP } from "../utils/otp.utils.js"
+import { sendOTPEmail, generateOTP, sendResetPasswordEmail } from "../utils/otp.utils.js"
+import crypto from "crypto"
 
 const router = express.Router()
 
@@ -356,6 +357,89 @@ router.post(
       error.statusCode = 400
       throw error
     }
+  }),
+)
+
+// @route   POST /api/auth/forgot-password
+// @desc    Forgot Password
+// @access  Public
+router.post(
+  "/forgot-password",
+  asyncHandler(async (req, res) => {
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      const error = new Error("User not found with that email")
+      error.statusCode = 404
+      throw error
+    }
+
+    // Get reset token
+    const resetToken = user.getResetPasswordToken()
+
+    await user.save({ validateBeforeSave: false })
+
+    // Create reset url
+    // For local development, assume frontend is on port 5173 or the referer
+    // You might want to make this configurable via env var
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password/${resetToken}`
+
+    try {
+      await sendResetPasswordEmail(user.email, resetUrl)
+
+      res.status(200).json({
+        success: true,
+        message: "Email sent",
+      })
+    } catch (err) {
+      console.log(err)
+      user.resetPasswordToken = undefined
+      user.resetPasswordExpire = undefined
+
+      await user.save({ validateBeforeSave: false })
+
+      const error = new Error("Email could not be sent")
+      error.statusCode = 500
+      throw error
+    }
+  }),
+)
+
+// @route   PUT /api/auth/reset-password/:resetToken
+// @desc    Reset Password
+// @access  Public
+router.put(
+  "/reset-password/:resetToken",
+  asyncHandler(async (req, res) => {
+    const { password } = req.body
+
+    // Get hashed token
+    const resetPasswordToken = crypto.createHash("sha256").update(req.params.resetToken).digest("hex")
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    })
+
+    if (!user) {
+      const error = new Error("Invalid token")
+      error.statusCode = 400
+      throw error
+    }
+
+    // Set new password
+    user.password = password
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpire = undefined
+
+    await user.save()
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated success",
+    })
   }),
 )
 
