@@ -4,9 +4,11 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { Loader2, ArrowRight } from "lucide-react"
+import ReCAPTCHA from "react-google-recaptcha"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" })
+  const [recaptchaToken, setRecaptchaToken] = useState(null)
   const { login, loading, user } = useAuthStore()
   const navigate = useNavigate()
 
@@ -19,7 +21,11 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await login(formData)
+      if (!recaptchaToken) {
+        alert("Please complete the CAPTCHA")
+        return
+      }
+      await login({ ...formData, recaptchaToken })
       navigate("/")
     } catch (error) {
       // Error is handled in the store
@@ -70,6 +76,23 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"
                 disabled={loading}
+              />
+              <input
+                id="password"
+                type="password"
+                required
+                className="input focus:ring-primary-500"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="••••••••"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                sitekey="6Lef1FQsAAAAAI8miuS-_g6QzsFMjBKnRgjfLT4i"
+                onChange={setRecaptchaToken}
               />
             </div>
 
