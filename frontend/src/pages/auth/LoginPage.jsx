@@ -81,7 +81,7 @@ export default function LoginPage() {
 
             <div className="flex justify-center">
               <ReCAPTCHA
-                sitekey="6Lef1FQsAAAAAI8miuS-_g6QzsFMjBKnRgjfLT4i"
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                 onChange={setRecaptchaToken}
               />
             </div>
