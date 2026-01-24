@@ -4,11 +4,10 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { Loader2, ArrowRight } from "lucide-react"
-import ReCAPTCHA from "react-google-recaptcha"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" })
-  const [recaptchaToken, setRecaptchaToken] = useState(null)
   const { login, loading, user } = useAuthStore()
   const navigate = useNavigate()
 
@@ -18,14 +17,19 @@ export default function LoginPage() {
     }
   }, [user, navigate])
 
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available');
+      return;
+    }
+
     try {
-      if (!recaptchaToken) {
-        alert("Please complete the CAPTCHA")
-        return
-      }
-      await login({ ...formData, recaptchaToken })
+      const token = await executeRecaptcha('login'); // Action name 'login' implementation
+      await login({ ...formData, recaptchaToken: token })
       navigate("/")
     } catch (error) {
       // Error is handled in the store
@@ -79,12 +83,7 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="flex justify-center">
-              <ReCAPTCHA
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={setRecaptchaToken}
-              />
-            </div>
+            {/* ReCAPTCHA v3 is invisible, so we removed the component */}
 
             <button
               type="submit"

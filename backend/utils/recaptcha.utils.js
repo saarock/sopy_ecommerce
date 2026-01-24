@@ -13,7 +13,17 @@ export const verifyRecaptcha = async (token) => {
             `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
         );
 
-        return response.data.success;
+        const data = response.data;
+
+        // v3 returns a score (0.0 to 1.0)
+        // We can check if success is true and score is high enough
+        if (data.success && data.score >= 0.5) {
+            return true;
+        }
+
+        console.warn("reCAPTCHA validation failed:", data);
+        return false;
+
     } catch (error) {
         console.error("reCAPTCHA verification error:", error);
         return false;
